@@ -1,0 +1,29 @@
+# Advanced Azure Storage Account Example - terraform.tfvars
+# Copy this file to terraform.tfvars and modify the values as needed
+
+# Resource Group Configuration
+resource_group_name = "rg-storage-advanced"
+location            = "East US"
+
+# Storage Account Configuration
+storage_account_name = "stexampleadvanced001"
+
+# Key Vault Configuration
+key_vault_name = "kv-storage-example"
+
+# Virtual Network Configuration
+virtual_network_name = "vnet-storage-example"
+subnet_name          = "snet-private-endpoints"
+
+# Environment Configuration
+environment = "production"
+
+# Tags Configuration
+tags = {
+  Environment = "Production"
+  Project     = "Advanced Storage Example"
+  Owner       = "DevOps Team"
+  CostCenter  = "IT-001"
+  Compliance  = "SOX"
+  ManagedBy   = "Terraform"
+} 
