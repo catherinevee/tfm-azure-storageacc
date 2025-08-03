@@ -2,6 +2,49 @@
 
 A comprehensive Terraform module for creating and managing Azure Storage Accounts with all available features and customization options.
 
+## Resource Map
+
+This module creates the following Azure resources:
+
+### Core Storage Account Resources
+| Resource Type | Purpose | Required | Description |
+|--------------|---------|----------|-------------|
+| `azurerm_storage_account` | Core | Yes | Primary Azure Storage Account resource |
+| `azurerm_storage_account_network_rules` | Network | No | Network access rules for the storage account |
+| `azurerm_storage_account_customer_managed_key` | Security | No | Customer-managed encryption key configuration |
+
+### Storage Services Resources
+| Resource Type | Purpose | Required | Description |
+|--------------|---------|----------|-------------|
+| `azurerm_storage_container` | Blob | No | Blob storage containers |
+| `azurerm_storage_queue` | Queue | No | Queue storage queues |
+| `azurerm_storage_table` | Table | No | Table storage tables |
+| `azurerm_storage_share` | File | No | File storage shares |
+| `azurerm_storage_account_local_user` | Local Users | No | Local user accounts for storage |
+| `azurerm_storage_encryption_scope` | Security | No | Encryption scopes for granular control |
+| `azurerm_storage_data_lake_gen2_filesystem` | Data Lake | No | Data Lake Gen2 filesystems |
+
+### Management & Policy Resources
+| Resource Type | Purpose | Required | Description |
+|--------------|---------|----------|-------------|
+| `azurerm_storage_management_policy` | Lifecycle | No | Lifecycle management policies |
+| `azurerm_storage_blob_inventory_policy` | Compliance | No | Blob inventory policies for compliance |
+
+### Data Sources
+| Resource Type | Purpose | Required | Description |
+|--------------|---------|----------|-------------|
+| `data.azurerm_resource_group` | Resource Group | No | Existing resource group lookup |
+| `data.azurerm_key_vault` | Key Vault | No | Key Vault lookup for customer-managed keys |
+| `data.azurerm_key_vault_key` | Key | No | Key Vault key lookup for encryption |
+
+### Resource Dependencies
+- **Storage Account Creation**: `azurerm_storage_account` → All other resources
+- **Network Rules**: `azurerm_storage_account` → `azurerm_storage_account_network_rules`
+- **Customer Managed Keys**: `azurerm_storage_account` → `azurerm_storage_account_customer_managed_key`
+- **Storage Services**: `azurerm_storage_account` → Storage containers, queues, tables, shares
+- **Management Policies**: `azurerm_storage_account` → `azurerm_storage_management_policy`
+- **Data Lake**: `azurerm_storage_account` → `azurerm_storage_data_lake_gen2_filesystem` (when HNS enabled)
+
 ## Features
 
 This module provides a complete solution for Azure Storage Account management with the following capabilities:
@@ -139,14 +182,14 @@ module "storage_account" {
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.0 |
-| azurerm | >= 3.0.0 |
+| terraform | ~> 1.13.0 |
+| azurerm | ~> 4.38.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 3.0.0 |
+| azurerm | ~> 4.38.1 |
 
 ## Inputs
 
