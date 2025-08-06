@@ -1,7 +1,8 @@
 # Azure Storage Account Module
-# This module creates a comprehensive Azure Storage Account with all available features and customization options
+# Creates storage account with optional services and security features
 
-# Storage Account
+# Main storage account resource
+# Supports all account types, tiers, and replication options
 resource "azurerm_storage_account" "main" {
   name                      = var.storage_account_name
   resource_group_name       = var.resource_group_name
@@ -116,30 +117,21 @@ resource "azurerm_storage_account" "main" {
       multichannel_enabled            = var.share_smb_multichannel_enabled
     }
   }
-  network_rules {
-    default_action             = var.network_rules_default_action
-    bypass                     = var.network_rules_bypass
-    ip_rules                   = var.network_rules_ip_rules
-    virtual_network_subnet_ids = var.network_rules_virtual_network_subnet_ids
-    private_link_access {
-      endpoint_tenant_id = var.network_rules_private_link_access_endpoint_tenant_id
-      endpoint_resource_id = var.network_rules_private_link_access_endpoint_resource_id
-    }
-  }
   routing {
     publish_internet_endpoints  = var.routing_publish_internet_endpoints
     publish_microsoft_endpoints = var.routing_publish_microsoft_endpoints
-    choice                      = var.routing_choice
+    choice                       = var.routing_choice
   }
   queue_encryption_key_type = var.queue_encryption_key_type
-  table_encryption_key_type = var.table_encryption_key_type
+  table_encryption_key_type  = var.table_encryption_key_type
   tags                      = var.tags
 }
 
-# Storage Account Network Rules (if specified separately)
+# Network rules for access control
+# Separate resource to avoid dependency issues during updates
 resource "azurerm_storage_account_network_rules" "main" {
   count = var.create_separate_network_rules ? 1 : 0
-  
+
   storage_account_id         = azurerm_storage_account.main.id
   default_action             = var.network_rules_default_action
   bypass                     = var.network_rules_bypass
@@ -151,7 +143,8 @@ resource "azurerm_storage_account_network_rules" "main" {
   }
 }
 
-# Storage Containers
+# Blob containers for object storage
+# Use for unstructured data like images, documents, backups
 resource "azurerm_storage_container" "containers" {
   for_each = var.containers
 
@@ -161,7 +154,8 @@ resource "azurerm_storage_container" "containers" {
   metadata              = each.value.metadata
 }
 
-# Storage Queues
+# Queue storage for message processing
+# Good for decoupling services and handling async workloads
 resource "azurerm_storage_queue" "queues" {
   for_each = var.queues
 
@@ -170,7 +164,8 @@ resource "azurerm_storage_queue" "queues" {
   metadata             = each.value.metadata
 }
 
-# Storage Tables
+# Table storage for structured NoSQL data
+# Use for key-value pairs and simple query patterns
 resource "azurerm_storage_table" "tables" {
   for_each = var.tables
 
@@ -186,7 +181,8 @@ resource "azurerm_storage_table" "tables" {
   }
 }
 
-# Storage File Shares
+# File shares for SMB access
+# Useful for legacy applications or shared file access
 resource "azurerm_storage_share" "file_shares" {
   for_each = var.file_shares
 
@@ -204,7 +200,8 @@ resource "azurerm_storage_share" "file_shares" {
   }
 }
 
-# Storage Account Management Policy
+# Lifecycle management policy
+# Automates data tiering and cleanup based on age and access patterns
 resource "azurerm_storage_management_policy" "main" {
   count = var.create_management_policy ? 1 : 0
 
@@ -215,40 +212,33 @@ resource "azurerm_storage_management_policy" "main" {
     content {
       name    = rule.value.name
       enabled = rule.value.enabled
-      
       filters {
         blob_types   = rule.value.filters.blob_types
         prefix_match = rule.value.filters.prefix_match
-        match_blob_index_tag {
-          name      = rule.value.filters.match_blob_index_tag.name
-          operation = rule.value.filters.match_blob_index_tag.operation
-          value     = rule.value.filters.match_blob_index_tag.value
-        }
       }
-      
       actions {
         base_blob {
           tier_to_cool_after_days_since_modification_greater_than    = rule.value.actions.base_blob.tier_to_cool_after_days_since_modification_greater_than
           tier_to_archive_after_days_since_modification_greater_than = rule.value.actions.base_blob.tier_to_archive_after_days_since_modification_greater_than
           delete_after_days_since_modification_greater_than          = rule.value.actions.base_blob.delete_after_days_since_modification_greater_than
-          auto_tier_to_hot_from_cool_enabled                         = rule.value.actions.base_blob.auto_tier_to_hot_from_cool_enabled
         }
         snapshot {
-          delete_after_days_since_creation_greater_than = rule.value.actions.snapshot.delete_after_days_since_creation_greater_than
           tier_to_cool_after_days_since_creation_greater_than    = rule.value.actions.snapshot.tier_to_cool_after_days_since_creation_greater_than
           tier_to_archive_after_days_since_creation_greater_than = rule.value.actions.snapshot.tier_to_archive_after_days_since_creation_greater_than
+          delete_after_days_since_creation_greater_than          = rule.value.actions.snapshot.delete_after_days_since_creation_greater_than
         }
         version {
-          delete_after_days_since_creation = rule.value.actions.version.delete_after_days_since_creation
-          tier_to_cool_after_days_since_creation    = rule.value.actions.version.tier_to_cool_after_days_since_creation
-          tier_to_archive_after_days_since_creation = rule.value.actions.version.tier_to_archive_after_days_since_creation
+          tier_to_cool_after_days_since_creation_greater_than    = rule.value.actions.version.tier_to_cool_after_days_since_creation_greater_than
+          tier_to_archive_after_days_since_creation_greater_than = rule.value.actions.version.tier_to_archive_after_days_since_creation_greater_than
+          delete_after_days_since_creation_greater_than          = rule.value.actions.version.delete_after_days_since_creation_greater_than
         }
       }
     }
   }
 }
 
-# Storage Account Customer Managed Key
+# Customer-managed encryption keys
+# Provides control over encryption keys for compliance requirements
 resource "azurerm_storage_account_customer_managed_key" "main" {
   count = var.create_customer_managed_key ? 1 : 0
 
@@ -256,34 +246,36 @@ resource "azurerm_storage_account_customer_managed_key" "main" {
   key_vault_id       = var.customer_managed_key_vault_id
   key_name           = var.customer_managed_key_name
   key_version        = var.customer_managed_key_version
-  user_assigned_identity_id = var.customer_managed_user_assigned_identity_id
 }
 
-# Storage Account Local User
+# Local users for SFTP access
+# Alternative to Azure AD for specific use cases
 resource "azurerm_storage_account_local_user" "local_users" {
   for_each = var.local_users
 
   name                 = each.key
   storage_account_id   = azurerm_storage_account.main.id
   home_directory       = each.value.home_directory
-  ssh_authorized_key {
-    description = each.value.ssh_authorized_key.description
-    key         = each.value.ssh_authorized_key.key
-  }
-  permission_scope {
-    permissions {
-      read   = each.value.permission_scope.permissions.read
-      write  = each.value.permission_scope.permissions.write
-      delete = each.value.permission_scope.permissions.delete
-      list   = each.value.permission_scope.permissions.list
-    }
-    service = each.value.permission_scope.service
-    resource_name = each.value.permission_scope.resource_name
+  ssh_authorized_keys {
+    description = each.value.ssh_key_description
+    key         = each.value.ssh_key
   }
   ssh_password_enabled = each.value.ssh_password_enabled
+  permission_scope {
+    permissions {
+      read   = each.value.permissions.read
+      write  = each.value.permissions.write
+      delete = each.value.permissions.delete
+      list   = each.value.permissions.list
+    }
+    resource_name = each.value.resource_name
+    service       = each.value.service
+  }
+  sid = each.value.sid
 }
 
-# Storage Account Encryption Scope
+# Encryption scopes for granular control
+# Allows different encryption settings per container or blob
 resource "azurerm_storage_encryption_scope" "encryption_scopes" {
   for_each = var.encryption_scopes
 
@@ -293,22 +285,18 @@ resource "azurerm_storage_encryption_scope" "encryption_scopes" {
   key_vault_key_id   = each.value.key_vault_key_id
 }
 
-# Storage Account Data Lake Gen2 Filesystem
+# Data Lake Gen2 filesystems
+# Requires hierarchical namespace enabled on storage account
 resource "azurerm_storage_data_lake_gen2_filesystem" "data_lake_filesystems" {
   for_each = var.data_lake_filesystems
 
   name               = each.key
   storage_account_id = azurerm_storage_account.main.id
   properties         = each.value.properties
-  ace {
-    permissions = each.value.ace.permissions
-    type        = each.value.ace.type
-    id          = each.value.ace.id
-    scope       = each.value.ace.scope
-  }
 }
 
-# Storage Account Blob Inventory Policy
+# Blob inventory policy for compliance
+# Generates reports for audit and compliance requirements
 resource "azurerm_storage_blob_inventory_policy" "blob_inventory_policy" {
   count = var.create_blob_inventory_policy ? 1 : 0
 
@@ -317,18 +305,13 @@ resource "azurerm_storage_blob_inventory_policy" "blob_inventory_policy" {
   dynamic "rules" {
     for_each = var.blob_inventory_policy_rules
     content {
-      name = rules.value.name
-      filter {
-        blob_types = rules.value.filter.blob_types
-        include_blob_versions = rules.value.filter.include_blob_versions
-        include_snapshots     = rules.value.filter.include_snapshots
-        include_deleted       = rules.value.filter.include_deleted
-        prefix_match          = rules.value.filter.prefix_match
-        exclude_prefixes      = rules.value.filter.exclude_prefixes
-      }
-      format = rules.value.format
+      name     = rules.value.name
+      enabled  = rules.value.enabled
       schedule = rules.value.schedule
       storage_container_name = rules.value.storage_container_name
+      format   = rules.value.format
+      scope    = rules.value.scope
+      schema_fields = rules.value.schema_fields
     }
   }
 } 

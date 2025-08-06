@@ -1,98 +1,76 @@
 # Azure Storage Account Terraform Module
 
-A comprehensive Terraform module for creating and managing Azure Storage Accounts with all available features and customization options.
+Terraform module for Azure Storage Account deployment with support for all storage services and security features.
 
-## Resource Map
+## What This Module Creates
 
-This module creates the following Azure resources:
-
-### Core Storage Account Resources
-| Resource Type | Purpose | Required | Description |
-|--------------|---------|----------|-------------|
-| `azurerm_storage_account` | Core | Yes | Primary Azure Storage Account resource |
-| `azurerm_storage_account_network_rules` | Network | No | Network access rules for the storage account |
-| `azurerm_storage_account_customer_managed_key` | Security | No | Customer-managed encryption key configuration |
-
-### Storage Services Resources
-| Resource Type | Purpose | Required | Description |
-|--------------|---------|----------|-------------|
-| `azurerm_storage_container` | Blob | No | Blob storage containers |
-| `azurerm_storage_queue` | Queue | No | Queue storage queues |
-| `azurerm_storage_table` | Table | No | Table storage tables |
-| `azurerm_storage_share` | File | No | File storage shares |
-| `azurerm_storage_account_local_user` | Local Users | No | Local user accounts for storage |
-| `azurerm_storage_encryption_scope` | Security | No | Encryption scopes for granular control |
-| `azurerm_storage_data_lake_gen2_filesystem` | Data Lake | No | Data Lake Gen2 filesystems |
-
-### Management & Policy Resources
-| Resource Type | Purpose | Required | Description |
-|--------------|---------|----------|-------------|
-| `azurerm_storage_management_policy` | Lifecycle | No | Lifecycle management policies |
-| `azurerm_storage_blob_inventory_policy` | Compliance | No | Blob inventory policies for compliance |
-
-### Data Sources
-| Resource Type | Purpose | Required | Description |
-|--------------|---------|----------|-------------|
-| `data.azurerm_resource_group` | Resource Group | No | Existing resource group lookup |
-| `data.azurerm_key_vault` | Key Vault | No | Key Vault lookup for customer-managed keys |
-| `data.azurerm_key_vault_key` | Key | No | Key Vault key lookup for encryption |
-
-### Resource Dependencies
-- **Storage Account Creation**: `azurerm_storage_account` → All other resources
-- **Network Rules**: `azurerm_storage_account` → `azurerm_storage_account_network_rules`
-- **Customer Managed Keys**: `azurerm_storage_account` → `azurerm_storage_account_customer_managed_key`
-- **Storage Services**: `azurerm_storage_account` → Storage containers, queues, tables, shares
-- **Management Policies**: `azurerm_storage_account` → `azurerm_storage_management_policy`
-- **Data Lake**: `azurerm_storage_account` → `azurerm_storage_data_lake_gen2_filesystem` (when HNS enabled)
-
-## Features
-
-This module provides a complete solution for Azure Storage Account management with the following capabilities:
-
-### Core Storage Account Features
-- **Account Types**: Support for all account kinds (StorageV2, BlobStorage, BlockBlobStorage, FileStorage, Storage)
-- **Tiers**: Standard and Premium tiers
-- **Replication**: All replication types (LRS, GRS, RAGRS, ZRS, GZRS, RAGZRS)
-- **Access Tiers**: Hot and Cool access tiers
-- **Edge Zones**: Support for edge zone deployment
-
-### Security & Compliance
-- **Encryption**: Infrastructure encryption, customer managed keys
-- **Network Security**: Private endpoints, network rules, IP restrictions
-- **Authentication**: OAuth, Shared Key, SAS policies
-- **TLS**: Configurable minimum TLS versions
-- **Public Access**: Control over public access and nested item public access
-
-### Advanced Features
-- **Hierarchical Namespace**: Data Lake Gen2 support
-- **SFTP**: Secure File Transfer Protocol
-- **NFSv3**: Network File System v3 support
-- **Large File Shares**: Support for large file shares
-- **Local Users**: Local user management
-- **Cross-Tenant Replication**: Multi-tenant replication support
+### Core Resources
+| Resource | Purpose | Required |
+|----------|---------|----------|
+| `azurerm_storage_account` | Main storage account | Yes |
+| `azurerm_storage_account_network_rules` | Network access control | No |
+| `azurerm_storage_account_customer_managed_key` | Custom encryption keys | No |
 
 ### Storage Services
-- **Blob Storage**: Containers with versioning, change feed, CORS
-- **Queue Storage**: Queues with logging and metrics
-- **Table Storage**: Tables with access control
-- **File Storage**: File shares with SMB configuration
-- **Static Website**: Static website hosting
+| Resource | Purpose | Required |
+|----------|---------|----------|
+| `azurerm_storage_container` | Blob containers | No |
+| `azurerm_storage_queue` | Queue storage | No |
+| `azurerm_storage_table` | Table storage | No |
+| `azurerm_storage_share` | File shares | No |
+| `azurerm_storage_account_local_user` | Local user accounts | No |
+| `azurerm_storage_encryption_scope` | Granular encryption | No |
+| `azurerm_storage_data_lake_gen2_filesystem` | Data Lake Gen2 | No |
+
+### Management & Compliance
+| Resource | Purpose | Required |
+|----------|---------|----------|
+| `azurerm_storage_management_policy` | Lifecycle management | No |
+| `azurerm_storage_blob_inventory_policy` | Compliance reporting | No |
+
+### Dependencies
+- Storage account must exist before other resources
+- Network rules apply after account creation
+- Customer managed keys require Key Vault access
+- Data Lake features need HNS enabled
+
+## Key Features
+
+### Storage Options
+- **Account Types**: StorageV2, BlobStorage, BlockBlobStorage, FileStorage
+- **Performance Tiers**: Standard and Premium
+- **Replication**: LRS, GRS, RAGRS, ZRS, GZRS, RAGZRS
+- **Access Tiers**: Hot and Cool for cost optimization
+
+### Security & Compliance
+- **Encryption**: Infrastructure and customer-managed keys
+- **Network Security**: Private endpoints, IP restrictions, VNet integration
+- **Authentication**: OAuth, Shared Key, SAS policies
+- **TLS**: Configurable minimum versions
+- **Public Access**: Control over public exposure
+
+### Advanced Capabilities
+- **Data Lake Gen2**: Hierarchical namespace support
+- **SFTP**: Secure file transfer
+- **NFSv3**: Network file system support
+- **Large File Shares**: For big data workloads
+- **Cross-Tenant Replication**: Multi-tenant scenarios
+
+### Storage Services
+- **Blob Storage**: Containers with versioning and change feed
+- **Queue Storage**: Message queuing with logging
+- **Table Storage**: NoSQL data storage
+- **File Storage**: SMB file shares
+- **Static Website**: Web hosting capabilities
 
 ### Data Management
-- **Lifecycle Management**: Automated tiering and deletion policies
-- **Blob Inventory**: Inventory policies for compliance
-- **Encryption Scopes**: Granular encryption control
-- **Data Lake Gen2**: Filesystem management
-
-### Monitoring & Analytics
-- **Logging**: Comprehensive logging configuration
-- **Metrics**: Minute and hour-level metrics
-- **CORS**: Cross-Origin Resource Sharing
-- **Retention Policies**: Configurable retention periods
+- **Lifecycle Policies**: Automatic tiering and cleanup
+- **Blob Inventory**: Compliance and audit reporting
+- **Encryption Scopes**: Service-level encryption control
 
 ## Usage
 
-### Basic Usage
+### Basic Setup
 
 ```hcl
 module "storage_account" {
@@ -104,24 +82,24 @@ module "storage_account" {
 }
 ```
 
-### Advanced Usage
+### Production Configuration
 
 ```hcl
 module "storage_account" {
   source = "./tfm-azure-storageacc"
 
-  # Required parameters
+  # Required
   storage_account_name = "mystorageaccount"
   resource_group_name  = "my-resource-group"
   location            = "East US"
 
-  # Advanced configuration
+  # Performance and availability
   account_tier             = "Premium"
   account_replication_type = "ZRS"
   account_kind             = "StorageV2"
   access_tier              = "Hot"
 
-  # Security settings
+  # Security hardening
   enable_https_traffic_only = true
   min_tls_version          = "TLS1_2"
   public_network_access_enabled = false
@@ -133,7 +111,7 @@ module "storage_account" {
   local_user_enabled        = true
   sftp_enabled              = true
 
-  # Network rules
+  # Network restrictions
   network_rules_default_action = "Deny"
   network_rules_bypass         = ["AzureServices"]
   network_rules_ip_rules       = ["203.0.113.0/24"]
@@ -150,7 +128,7 @@ module "storage_account" {
     }
   }
 
-  # Management policy
+  # Lifecycle management
   create_management_policy = true
   management_policy_rules = [
     {
@@ -185,99 +163,93 @@ module "storage_account" {
 | terraform | ~> 1.13.0 |
 | azurerm | ~> 4.38.1 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| azurerm | ~> 4.38.1 |
-
 ## Inputs
 
 ### Required Parameters
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| storage_account_name | The name of the storage account. Must be globally unique and between 3-24 characters in length. | `string` | n/a | yes |
-| resource_group_name | The name of the resource group in which to create the storage account. | `string` | n/a | yes |
-| location | The Azure region where the storage account will be created. | `string` | n/a | yes |
+| storage_account_name | Storage account name (3-24 chars, globally unique) | `string` | n/a | yes |
+| resource_group_name | Resource group name | `string` | n/a | yes |
+| location | Azure region | `string` | n/a | yes |
 
-### Storage Account Configuration
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| account_tier | Defines the tier to use for this storage account. Valid options are Standard and Premium. | `string` | `"Standard"` | no |
-| account_replication_type | Defines the type of replication to use for this storage account. Valid options are LRS, GRS, RAGRS, ZRS, GZRS, RAGZRS. | `string` | `"LRS"` | no |
-| account_kind | Defines the kind of account. Valid options are BlobStorage, BlockBlobStorage, FileStorage, Storage and StorageV2. | `string` | `"StorageV2"` | no |
-| access_tier | Defines the access tier for BlobStorage, FileStorage and StorageV2 accounts. Valid options are Hot and Cool. | `string` | `"Hot"` | no |
-| edge_zone | Specifies the Edge Zone within the Azure Region where this Storage Account should exist. | `string` | `null` | no |
-
-### Security Configuration
+### Storage Configuration
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| enable_https_traffic_only | Boolean flag which forces HTTPS if enabled. | `bool` | `true` | no |
-| min_tls_version | The minimum supported TLS version for the storage account. Valid options are TLS1_0, TLS1_1, and TLS1_2. | `string` | `"TLS1_2"` | no |
-| allow_nested_items_to_be_public | Allow or disallow nested items within this Storage Account to opt into being public. | `bool` | `false` | no |
-| shared_access_key_enabled | Indicates whether the storage account permits requests to be authorized with the account access key via Shared Key. | `bool` | `true` | no |
-| public_network_access_enabled | Whether the public network access is allowed for the storage account. | `bool` | `true` | no |
-| default_to_oauth_authentication | Default to Azure Active Directory authorization in the Azure portal when accessing the Storage Account. | `bool` | `false` | no |
+| account_tier | Performance tier (Standard/Premium) | `string` | `"Standard"` | no |
+| account_replication_type | Replication strategy | `string` | `"LRS"` | no |
+| account_kind | Account type | `string` | `"StorageV2"` | no |
+| access_tier | Data access tier (Hot/Cool) | `string` | `"Hot"` | no |
+| edge_zone | Edge zone deployment | `string` | `null` | no |
+
+### Security Settings
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| enable_https_traffic_only | Force HTTPS traffic | `bool` | `true` | no |
+| min_tls_version | Minimum TLS version | `string` | `"TLS1_2"` | no |
+| allow_nested_items_to_be_public | Allow public nested items | `bool` | `false` | no |
+| shared_access_key_enabled | Enable shared key auth | `bool` | `true` | no |
+| public_network_access_enabled | Allow public network access | `bool` | `true` | no |
+| default_to_oauth_authentication | Default to Azure AD auth | `bool` | `false` | no |
 
 ### Advanced Features
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| is_hns_enabled | Is Hierarchical Namespace enabled? This can be used with Azure Data Lake Storage Gen 2. | `bool` | `false` | no |
-| nfsv3_enabled | Is NFSv3 protocol enabled? | `bool` | `false` | no |
-| large_file_share_enabled | Enable Large File Share for this storage account. | `bool` | `false` | no |
-| local_user_enabled | Enable local users for this storage account. | `bool` | `false` | no |
-| cross_tenant_replication_enabled | Enable cross tenant replication for this storage account. | `bool` | `false` | no |
-| sftp_enabled | Enable SFTP for this storage account. | `bool` | `false` | no |
-| infrastructure_encryption_enabled | Is infrastructure encryption enabled? | `bool` | `false` | no |
+| is_hns_enabled | Enable hierarchical namespace | `bool` | `false` | no |
+| nfsv3_enabled | Enable NFSv3 protocol | `bool` | `false` | no |
+| large_file_share_enabled | Enable large file shares | `bool` | `false` | no |
+| local_user_enabled | Enable local users | `bool` | `false` | no |
+| cross_tenant_replication_enabled | Enable cross-tenant replication | `bool` | `false` | no |
+| sftp_enabled | Enable SFTP | `bool` | `false` | no |
+| infrastructure_encryption_enabled | Enable infrastructure encryption | `bool` | `false` | no |
 
 ### Network Configuration
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| network_rules_default_action | Specifies the default action of allow or deny when no other rules match. Valid options are Deny and Allow. | `string` | `"Allow"` | no |
-| network_rules_bypass | Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Valid options are AzureServices, Logging, Metrics, None. | `list(string)` | `["AzureServices"]` | no |
-| network_rules_ip_rules | List of public IP or IP ranges in CIDR Format. | `list(string)` | `[]` | no |
-| network_rules_virtual_network_subnet_ids | A list of virtual network subnet ids to to secure the storage account. | `list(string)` | `[]` | no |
+| network_rules_default_action | Default network action | `string` | `"Allow"` | no |
+| network_rules_bypass | Traffic bypass options | `list(string)` | `["AzureServices"]` | no |
+| network_rules_ip_rules | Allowed IP ranges | `list(string)` | `[]` | no |
+| network_rules_virtual_network_subnet_ids | Allowed VNet subnets | `list(string)` | `[]` | no |
 
-### Storage Services Configuration
+### Storage Services
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| containers | Map of storage containers to create. | `map(object)` | `{}` | no |
-| queues | Map of storage queues to create. | `map(object)` | `{}` | no |
-| tables | Map of storage tables to create. | `map(object)` | `{}` | no |
-| file_shares | Map of storage file shares to create. | `map(object)` | `{}` | no |
-| local_users | Map of local users to create. | `map(object)` | `{}` | no |
-| encryption_scopes | Map of encryption scopes to create. | `map(object)` | `{}` | no |
-| data_lake_filesystems | Map of data lake filesystems to create. | `map(object)` | `{}` | no |
+| containers | Blob containers to create | `map(object)` | `{}` | no |
+| queues | Queue storage to create | `map(object)` | `{}` | no |
+| tables | Table storage to create | `map(object)` | `{}` | no |
+| file_shares | File shares to create | `map(object)` | `{}` | no |
+| local_users | Local users to create | `map(object)` | `{}` | no |
+| encryption_scopes | Encryption scopes to create | `map(object)` | `{}` | no |
+| data_lake_filesystems | Data Lake filesystems to create | `map(object)` | `{}` | no |
 
 ### Management & Policies
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| create_management_policy | Whether to create a management policy for the storage account. | `bool` | `false` | no |
-| management_policy_rules | List of management policy rules. | `list(object)` | `[]` | no |
-| create_blob_inventory_policy | Whether to create a blob inventory policy for the storage account. | `bool` | `false` | no |
-| blob_inventory_policy_rules | List of blob inventory policy rules. | `list(object)` | `[]` | no |
+| create_management_policy | Create lifecycle policy | `bool` | `false` | no |
+| management_policy_rules | Lifecycle rules | `list(object)` | `[]` | no |
+| create_blob_inventory_policy | Create inventory policy | `bool` | `false` | no |
+| blob_inventory_policy_rules | Inventory rules | `list(object)` | `[]` | no |
 
 ### Customer Managed Keys
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| create_customer_managed_key | Whether to create a customer managed key for the storage account. | `bool` | `false` | no |
-| customer_managed_key_vault_id | The ID of the Key Vault which should be used to encrypt data in the Storage Account. | `string` | `null` | no |
-| customer_managed_key_name | The name of the Key Vault Key which should be used to encrypt data in the Storage Account. | `string` | `null` | no |
-| customer_managed_key_version | The version of the Key Vault Key which should be used to encrypt data in the Storage Account. | `string` | `null` | no |
+| create_customer_managed_key | Use customer-managed keys | `bool` | `false` | no |
+| customer_managed_key_vault_id | Key Vault ID | `string` | `null` | no |
+| customer_managed_key_name | Key name | `string` | `null` | no |
+| customer_managed_key_version | Key version | `string` | `null` | no |
 
 ### Tags
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| tags | A mapping of tags to assign to the resource. | `map(string)` | `{}` | no |
+| tags | Resource tags | `map(string)` | `{}` | no |
 
 ## Outputs
 
@@ -285,87 +257,87 @@ module "storage_account" {
 
 | Name | Description |
 |------|-------------|
-| storage_account_id | The ID of the Storage Account. |
-| storage_account_name | The name of the Storage Account. |
-| storage_account_primary_location | The primary location of the Storage Account. |
-| storage_account_secondary_location | The secondary location of the Storage Account. |
-| storage_account_info | Comprehensive information about the Storage Account. |
+| storage_account_id | Storage account resource ID |
+| storage_account_name | Storage account name |
+| storage_account_primary_location | Primary region |
+| storage_account_secondary_location | Secondary region |
+| storage_account_info | Complete account information |
 
-### Access Keys & Connection Strings
+### Access & Connection
 
 | Name | Description |
 |------|-------------|
-| storage_account_primary_access_key | The primary access key for the Storage Account. |
-| storage_account_secondary_access_key | The secondary access key for the Storage Account. |
-| storage_account_primary_connection_string | The primary connection string for the Storage Account. |
-| storage_account_secondary_connection_string | The secondary connection string for the Storage Account. |
+| storage_account_primary_access_key | Primary access key (sensitive) |
+| storage_account_secondary_access_key | Secondary access key (sensitive) |
+| storage_account_primary_connection_string | Primary connection string (sensitive) |
+| storage_account_secondary_connection_string | Secondary connection string (sensitive) |
 
 ### Endpoints
 
 | Name | Description |
 |------|-------------|
-| storage_account_primary_blob_endpoint | The primary blob endpoint of the Storage Account. |
-| storage_account_primary_queue_endpoint | The primary queue endpoint of the Storage Account. |
-| storage_account_primary_table_endpoint | The primary table endpoint of the Storage Account. |
-| storage_account_primary_file_endpoint | The primary file endpoint of the Storage Account. |
-| storage_account_primary_web_endpoint | The primary web endpoint of the Storage Account. |
-| storage_account_primary_dfs_endpoint | The primary DFS endpoint of the Storage Account. |
-| storage_account_endpoints | Summary of all Storage Account endpoints. |
+| storage_account_primary_blob_endpoint | Blob service endpoint |
+| storage_account_primary_queue_endpoint | Queue service endpoint |
+| storage_account_primary_table_endpoint | Table service endpoint |
+| storage_account_primary_file_endpoint | File service endpoint |
+| storage_account_primary_web_endpoint | Static website endpoint |
+| storage_account_primary_dfs_endpoint | Data Lake endpoint |
+| storage_account_endpoints | All endpoints summary |
 
 ### Storage Services
 
 | Name | Description |
 |------|-------------|
-| storage_containers | Map of storage containers created. |
-| storage_queues | Map of storage queues created. |
-| storage_tables | Map of storage tables created. |
-| storage_file_shares | Map of storage file shares created. |
-| storage_account_local_users | Map of storage account local users created. |
-| storage_account_encryption_scopes | Map of storage account encryption scopes created. |
-| storage_account_data_lake_filesystems | Map of storage account data lake filesystems created. |
+| storage_containers | Created blob containers |
+| storage_queues | Created queue storage |
+| storage_tables | Created table storage |
+| storage_file_shares | Created file shares |
+| storage_account_local_users | Created local users |
+| storage_account_encryption_scopes | Created encryption scopes |
+| storage_account_data_lake_filesystems | Created Data Lake filesystems |
 
 ### Security & Configuration
 
 | Name | Description |
 |------|-------------|
-| storage_account_security_info | Security-related information about the Storage Account. |
-| storage_account_features_info | Feature-related information about the Storage Account. |
-| storage_account_identity | The identity configuration of the Storage Account. |
-| storage_account_network_rules | The network rules configuration of the Storage Account. |
+| storage_account_security_info | Security configuration details |
+| storage_account_features_info | Feature configuration details |
+| storage_account_identity | Managed identity configuration |
+| storage_account_network_rules | Network rules configuration |
 
 ## Examples
 
-See the [examples](./examples/) directory for complete working examples:
+See the [examples](./examples/) directory:
 
-- [Basic Example](./examples/basic/) - Simple storage account with minimal configuration
-- [Advanced Example](./examples/advanced/) - Comprehensive storage account with all features
+- [Basic Example](./examples/basic/) - Minimal configuration
+- [Advanced Example](./examples/advanced/) - Full feature set
 
 ## Best Practices
 
 ### Security
-1. **Use Private Endpoints**: Configure private endpoints for secure access
-2. **Enable Customer Managed Keys**: Use Azure Key Vault for encryption key management
-3. **Restrict Network Access**: Use network rules to limit access to trusted sources
-4. **Enable HTTPS Only**: Force HTTPS traffic for all operations
-5. **Use OAuth Authentication**: Default to Azure AD authentication when possible
+1. **Private Endpoints**: Use for secure access patterns
+2. **Customer Managed Keys**: For compliance requirements
+3. **Network Restrictions**: Limit access to trusted sources
+4. **HTTPS Only**: Enforce secure transport
+5. **OAuth Default**: Use Azure AD when possible
 
 ### Performance
-1. **Choose Appropriate Tier**: Use Premium tier for high-performance workloads
-2. **Select Right Replication**: Choose replication based on availability and cost requirements
-3. **Enable Large File Shares**: For workloads requiring large file shares
-4. **Use ZRS**: For better availability in supported regions
+1. **Premium Tier**: For high-performance workloads
+2. **ZRS Replication**: Better availability in supported regions
+3. **Large File Shares**: For big data scenarios
+4. **Appropriate Access Tier**: Hot for frequent access, Cool for archival
 
-### Cost Optimization
-1. **Use Cool Access Tier**: For infrequently accessed data
-2. **Configure Lifecycle Policies**: Automatically move data to cheaper tiers
-3. **Set Retention Policies**: Delete data when no longer needed
-4. **Monitor Usage**: Use metrics and logging to track usage patterns
+### Cost Management
+1. **Cool Tier**: For infrequently accessed data
+2. **Lifecycle Policies**: Automatic tiering and cleanup
+3. **Retention Policies**: Delete obsolete data
+4. **Usage Monitoring**: Track consumption patterns
 
 ### Compliance
-1. **Enable Versioning**: For data protection and compliance
-2. **Configure Change Feed**: For audit trails
-3. **Set Up Inventory Policies**: For compliance reporting
-4. **Use Encryption Scopes**: For granular encryption control
+1. **Versioning**: For data protection
+2. **Change Feed**: For audit trails
+3. **Inventory Policies**: For compliance reporting
+4. **Encryption Scopes**: For granular control
 
 ## Contributing
 
@@ -377,7 +349,7 @@ See the [examples](./examples/) directory for complete working examples:
 
 ## License
 
-This module is licensed under the MIT License. See the LICENSE file for details.
+MIT License - see LICENSE file for details.
 
 ## Support
 
@@ -390,7 +362,7 @@ For issues and questions:
 
 ### Version 1.0.0
 - Initial release
-- Comprehensive Azure Storage Account module
-- Support for all major features and services
-- Advanced security and compliance options
-- Complete examples and documentation
+- Complete Azure Storage Account module
+- All major features and services supported
+- Security and compliance options
+- Examples and documentation
